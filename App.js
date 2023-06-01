@@ -1,6 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { Button, StyleSheet, Text, View } from 'react-native';
 import { Camera } from 'expo-camera';
+import * as MediaLibrary from 'expo-media-library';
+import * as FileSystem from 'expo-file-system';
+import { v4 as uuid } from 'uuid';
+
 
 export default function App() {
   const [openCamera, setOpenCamera] = useState(false);
@@ -37,10 +41,43 @@ function CameraScreen({ onCloseCamera }) {
 
   const takePicture = async () => {
     if (camera) {
-      const photo = await camera.takePictureAsync();
-      setPhoto(photo.uri);
+      try {
+        const { status: cameraStatus } = await Camera.requestCameraPermissionsAsync();
+        if (cameraStatus !== 'granted') {
+          throw new Error('Camera permission not granted');
+        }
+  
+        const { status: libraryStatus } = await MediaLibrary.requestPermissionsAsync();
+        if (libraryStatus !== 'granted') {
+          throw new Error('Media library permission not granted');
+        }
+  
+        const photo = await camera.takePictureAsync();
+  
+        const currentDate = new Date();
+        const year = currentDate.getFullYear().toString();
+        const month = (currentDate.getMonth() + 1).toString().padStart(2, '0');
+        const day = currentDate.getDate().toString().padStart(2, '0');
+  
+        const path = `${FileSystem.documentDirectory}photo-app/${year}/${month}/${day}`;
+  
+        await FileSystem.makeDirectoryAsync(path, { intermediates: true });
+        const newUri = `${path}/${uuid()}.jpg`;
+        await FileSystem.moveAsync({
+          from: photo.uri,
+          to: newUri,
+        });
+  
+        await MediaLibrary.saveToLibraryAsync(newUri);
+        setPhoto(newUri);
+  
+        alert('Imagen guardada en: ' + path);
+      } catch (error) {
+        console.error('Failed to take picture:', error);
+      }
     }
   };
+  
 
   if (hasPermission === null) {
     return <View />;
