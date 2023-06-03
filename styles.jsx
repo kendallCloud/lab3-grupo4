@@ -2,7 +2,7 @@ import {StyleSheet} from 'react-native';
 
 const styles = StyleSheet.create({
     button: {
-        backgroundColor: 'rgb(154, 227, 220)',
+        backgroundColor: '#375a91',
         padding: 15,
         alignItems: 'center',
         justifyContent: 'center',
@@ -15,6 +15,17 @@ const styles = StyleSheet.create({
         color: 'white',
         fontSize: 16,
     },
+    buttonTransparent: {
+        backgroundColor: 'transparent',
+        padding: 15,
+        alignItems: 'center',
+        justifyContent: 'center',
+        borderRadius: 50,
+        margin: 5,
+        width: '90%', // This is to make sure the button doesn't take the full width
+        alignSelf: 'center', // This is to center the button
+    }
+    ,
     container: {
       flex: 1,
       justifyContent: 'flex-end', backgroundColor: '#000' // This will align the children elements to the end of the main axis

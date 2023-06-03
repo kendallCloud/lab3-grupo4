@@ -1,14 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import { Button, StyleSheet, Text, View } from 'react-native';
+import {TouchableOpacity, Text, View } from 'react-native';
 import { Camera } from 'expo-camera';
 import * as MediaLibrary from 'expo-media-library';
 import * as FileSystem from 'expo-file-system';
 import { v4 as uuid } from 'uuid';
-
+import  styles  from './styles';
+import Icon from 'react-native-vector-icons/MaterialIcons';
 
 export default function App() {
   const [openCamera, setOpenCamera] = useState(false);
-
   const handleOpenCamera = () => {
     setOpenCamera(true);
   };
@@ -19,7 +19,9 @@ export default function App() {
         <CameraScreen onCloseCamera={() => setOpenCamera(false)} />
       ) : (
         <View style={styles.home}>
-          <Button title="Open Camera" onPress={handleOpenCamera} />
+          <TouchableOpacity style={styles.button} onPress={handleOpenCamera}>
+            <Icon name="photo-camera" size={30} color="#FFF" />
+          </TouchableOpacity>
         </View>
       )}
     </View>
@@ -31,6 +33,7 @@ function CameraScreen({ onCloseCamera }) {
   const [type, setType] = useState(Camera.Constants.Type.back);
   const [camera, setCamera] = useState(null);
   const [photo, setPhoto] = useState(null);
+  const [isVisible, setIsVisible] = useState(true);
 
   useEffect(() => {
     (async () => {
@@ -76,8 +79,7 @@ function CameraScreen({ onCloseCamera }) {
         console.error('Failed to take picture:', error);
       }
     }
-  };
-  
+  }; 
 
   if (hasPermission === null) {
     return <View />;
@@ -89,42 +91,29 @@ function CameraScreen({ onCloseCamera }) {
     <View style={styles.container}>
       <Camera style={styles.camera} type={type} ref={(ref) => setCamera(ref)}>
         <View style={styles.buttonContainer}>
-          <Button
-            title="Flip"
-            onPress={() => {
+          <TouchableOpacity style={styles.button} onPress={takePicture}>
+              <Icon name="add-a-photo" size={30} color="#FFF" />
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.buttonTransparent} onPress={() => setIsVisible(!isVisible)}>
+            <Icon name={!isVisible ? "visibility-off" : "visibility"} size={30} color="#FFF" />
+          </TouchableOpacity>
+          <View style={{ display: isVisible ? 'flex' : 'none' }}>
+            <TouchableOpacity style={styles.button} onPress={() => {
               setType(
                 type === Camera.Constants.Type.back
                   ? Camera.Constants.Type.front
                   : Camera.Constants.Type.back
               );
-            }}
-          />
-          <Button title="Take Picture" onPress={takePicture} />
-          <Button title="Close Camera" onPress={onCloseCamera} />
+            }}>
+              <Icon name="flip-camera-ios" size={30} color="#FFF" />
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.button} onPress={onCloseCamera}>
+              <Icon name="close" size={30} color="#FFF" />
+            </TouchableOpacity>
+          </View>
         </View>
       </Camera>
       {photo && <Text>{photo}</Text>}
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  camera: {
-    flex: 1,
-  },
-  buttonContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    paddingHorizontal: 20,
-    paddingVertical: 40,
-    backgroundColor: 'transparent',
-  },
-  home: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-});
